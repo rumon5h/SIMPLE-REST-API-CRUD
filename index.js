@@ -12,7 +12,6 @@ app.use(cors());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.7jcvfs6.mongodb.net/?retryWrites=true&w=majority`;
 
 async function run() {
-
   const client = new MongoClient(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -20,14 +19,23 @@ async function run() {
   });
 
   client.connect((err) => {
-
     const serviceCollection = client.db("rest-api").collection("services");
 
     try {
+      // Create new service
+      app.post("/services", async (req, res) => {
+        const service = req.body;
+        const result = await serviceCollection.insertOne(service);
+
+        res.status(201).send({
+          statusbar: "Success",
+          message: "Successfully created the service",
+          data: result,
+        });
+      });
 
       // Get services
       app.get("/services", async (req, res) => {
-
         const query = {};
         const result = await serviceCollection.find(query).toArray();
 
@@ -36,48 +44,38 @@ async function run() {
           message: "Successfully got all services",
           data: result,
         });
-
       });
 
-      // Create new service
-      app.post('/services', async (req, res) => {
-        const service = req.body;
-        const result = await serviceCollection.insertOne(service);
+      app.put("/services/:id", async (req, res) => {
+        const data = req.body;
+        const id = req.params.id;
+        const filter = { _id: ObjectId(id) };
+        const options = { upsert: true };
 
-        res.status(201).send({
-          statusbar: "Success",
-          message: "Successfully created the service",
-          data: result
-        });
-      });
-
-      app.patch('/services', async (req, res) =>{
-        const service = req.body;
-        const {id} = req.query;
-        const query = {_id: ObjectId(id)};
-
-        const result = await serviceCollection.updateOne({query}, {$set: service});
-
+        const updatedDoc = {
+          $set: data
+        }
+        const result = await serviceCollection.updateOne(filter, updatedDoc, options);
+        
         res.status(201).send({
           status: "Success",
           message: "Successfully updated the service",
-          data: result
+          data: result,
         });
-      })
+      });
 
       // Delete a service
-      app.delete('/services', async (req, res) =>{
-        const {id} = req.query;
-        const query = {_id: ObjectId(id)};
+      app.delete("/services", async (req, res) => {
+        const { id } = req.query;
+        const query = { _id: ObjectId(id) };
         const result = await serviceCollection.deleteOne(query);
 
         res.status(204).send({
           status: "Success",
           message: "Successfully deleted the service",
-          data: result
+          data: result,
         });
       });
-
     } finally {
       // perform actions on the collection object
       //   client.close();
