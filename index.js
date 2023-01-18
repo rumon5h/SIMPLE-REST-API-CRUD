@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const dotenv = require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const PORT = process.env.PORT || 5000;
 
 // Middleware
@@ -48,7 +48,20 @@ async function run() {
           statusbar: "Success",
           message: "Successfully created the service",
           data: result
-        })
+        });
+      });
+
+      // Delete a service
+      app.delete('/services', async (req, res) =>{
+        const {id} = req.query;
+        const query = {_id: ObjectId(id)};
+        const result = await serviceCollection.deleteOne(query);
+
+        res.status(204).send({
+          status: "Success",
+          message: "Successfully deleted the service",
+          data: result
+        });
       });
 
     } finally {
