@@ -51,6 +51,20 @@ async function run() {
         });
       });
 
+      app.patch('/services', async (req, res) =>{
+        const service = req.body;
+        const {id} = req.query;
+        const query = {_id: ObjectId(id)};
+
+        const result = await serviceCollection.updateOne({query}, {$set: service});
+
+        res.status(201).send({
+          status: "Success",
+          message: "Successfully updated the service",
+          data: result
+        });
+      })
+
       // Delete a service
       app.delete('/services', async (req, res) =>{
         const {id} = req.query;
