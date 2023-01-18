@@ -11,27 +11,40 @@ app.use(cors());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.7jcvfs6.mongodb.net/?retryWrites=true&w=majority`;
 
-async function run(){
+async function run() {
 
-const client = new MongoClient(uri, {
+  const client = new MongoClient(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     serverApi: ServerApiVersion.v1,
   });
+
   client.connect((err) => {
-    const collection = client.db("test").collection("devices");
+
+    const serviceCollection = client.db("rest-api").collection("services");
+
     try {
-  
-  
+      app.get("/services", async (req, res) => {
+
+        const query = {};
+        const result = await serviceCollection.find(query).toArray();
+        
+        res.status(200).send({
+          status: "Success",
+          message: "Successfully got all services",
+          data: result,
+        });
+
+      });
+
     } finally {
       // perform actions on the collection object
       //   client.close();
     }
   });
-  
 }
 
-run().catch(console.dir)
+run().catch(console.dir);
 
 app.get("/", (req, res) => {
   res.write(`<h2>This is a simple Rest API with CURD operations.</h2>`);
