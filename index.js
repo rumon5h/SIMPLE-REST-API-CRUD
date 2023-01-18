@@ -24,17 +24,31 @@ async function run() {
     const serviceCollection = client.db("rest-api").collection("services");
 
     try {
+
+      // Get services
       app.get("/services", async (req, res) => {
 
         const query = {};
         const result = await serviceCollection.find(query).toArray();
-        
+
         res.status(200).send({
           status: "Success",
           message: "Successfully got all services",
           data: result,
         });
 
+      });
+
+      // Create new service
+      app.post('/services', async (req, res) => {
+        const service = req.body;
+        const result = await serviceCollection.insertOne(service);
+
+        res.status(201).send({
+          statusbar: "Success",
+          message: "Successfully created the service",
+          data: result
+        })
       });
 
     } finally {
